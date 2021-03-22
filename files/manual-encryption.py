@@ -23,9 +23,11 @@ arp = rdpcap('arp.cap')[0]
 #on assigne des valeurx hexa au texte
 text = bytes.fromhex("aaaa03000000080600010800060400019027e4ea61f2c0a80164000000000000c0a801c8")
 
-#seed avec l'iv contenu dans le modele de trame et la clé définie
-#nous aurions pu definir un autre iv selon les infos du cours en slide 25 du pdf WEP
-seed = arp.iv+key
+#on choisis un iv a 0 comme proposé dans le slide 25 du PDF wep
+iv = bytes.fromhex("000000")
+
+#seed avec l'iv et la clé définie
+seed = iv+key
 
 #calcul de l'icv avec le crc32
 icv = binascii.crc32(text).to_bytes(4, byteorder='little')
@@ -37,6 +39,7 @@ encryptedText = cipher.crypt(text + icv)
 #on complete la trame avec les wepdata et l'icv calculé
 arp.wepdata = encryptedText[:-4]
 icv_enclair = encryptedText[-4:]
+arp.iv = iv
 arp.icv = struct.unpack('!L', icv_enclair)[0]
 
 #écris le fichier
