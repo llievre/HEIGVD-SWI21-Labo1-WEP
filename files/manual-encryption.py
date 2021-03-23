@@ -38,9 +38,9 @@ encryptedText = cipher.crypt(text + icv)
  
 #on complete la trame avec les wepdata et l'icv calculé
 arp.wepdata = encryptedText[:-4]
-icv_enclair = encryptedText[-4:]
+clearICV = encryptedText[-4:]
 arp.iv = iv
-arp.icv = struct.unpack('!L', icv_enclair)[0]
+arp.icv = struct.unpack('!L', clearICV)[0]
 
 #écris le fichier
 wrpcap("step2.pcap", arp)
