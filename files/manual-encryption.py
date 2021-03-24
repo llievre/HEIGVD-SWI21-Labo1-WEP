@@ -34,12 +34,20 @@ icv = binascii.crc32(text).to_bytes(4, byteorder='little')
 
 # chiffrement rc4
 cipher = RC4(seed, streaming=False)
+
+#text encrypté
 encryptedText = cipher.crypt(text + icv)
  
-#on complete la trame avec les wepdata et l'icv calculé
+#on complete la trame avec les wepdata
 arp.wepdata = encryptedText[:-4]
+
+#on recherche l'icv en clair
 clearICV = encryptedText[-4:]
+
+#on insere l'iv dans la trame
 arp.iv = iv
+
+#on insere l'icv dans la trame
 arp.icv = struct.unpack('!L', clearICV)[0]
 
 #écris le fichier

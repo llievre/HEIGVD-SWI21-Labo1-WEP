@@ -29,13 +29,23 @@ seed = iv+key
 # chiffrement rc4
 cipher = RC4(seed, streaming=False)
 
+#on définit le nombre de fragments à 3
 countFrag = 3
+
+#on calcule le nombre de caractères par fragments
 charsPerFrag = int(len(text) / countFrag)
 
+#copie le texte dans une variable intermediaire qui 
+#sera coupee à chaque itération
 currentText = text
 
 for i in range(0, countFrag):
     #reprend la trame du fichier pour la modifier
+    #une trame de 'template' est reprise du fichier
+    #à chaque fois car nous l'altérons avant de l'
+    #écrire dans un fichier et cela est plus simple
+    #à dépanner en cas de problème si on repart
+    #toujours du même modèle
     arp = rdpcap('arp.cap')[0]
 
     #prend le message sous forme de bytes
@@ -55,7 +65,7 @@ for i in range(0, countFrag):
     clearICV = encryptedText[-4:]
     arp.iv = iv
     
-    #reset longueur header sinon trame non reconnue
+    #reset longueur header sinon trame non reconnue correctement
     arp[RadioTap].len = None 
 
     #frame prend le numero du compteur
@@ -65,6 +75,7 @@ for i in range(0, countFrag):
     if i < countFrag-1:
         arp.FCfield |= 0b100 #code pour MF
 
+    #on indique l'icv de la trame
     arp.icv = struct.unpack('!L', clearICV)[0]
 
     #insere les trames dans le fichier
