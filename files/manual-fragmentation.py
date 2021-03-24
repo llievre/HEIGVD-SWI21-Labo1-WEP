@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-""" Manually fragment a wep message given the WEP key"""
+""" Manually fragment a wep message into 3 fragments given the WEP key"""
 
 __author__      = "Schranz Guillaume & Lièvre Loïc"
 __copyright__   = "Copyright 2021, HEIG-VD"
@@ -38,27 +38,34 @@ for i in range(0, countFrag):
     #reprend la trame du fichier pour la modifier
     arp = rdpcap('arp.cap')[0]
 
-    start = charsPerFrag*i
-    end = min(charsPerFrag, len(text[start:]))
-    fragMessage = bytes.fromhex(text[start:start+end])
+    #prend le message sous forme de bytes
+    fragMessage = bytes.fromhex(currentText[:charsPerFrag])
+
+    #enleve les n premiers caracteres deja framgentes
+    currentText = currentText[charsPerFrag:]
 
     #calcul de l'icv avec le crc32
     icv = binascii.crc32(fragMessage).to_bytes(4, byteorder='little')
 
+    #encrypte le message
     encryptedText = cipher.crypt(fragMessage + icv)
 
     #on complete la trame avec les wepdata et l'icv calculé
     arp.wepdata = encryptedText[:-4]
     clearICV = encryptedText[-4:]
     arp.iv = iv
-    arp.icv = struct.unpack('!L', clearICV)[0]
-    arp.SC = i #frame prend le numero du compteur
+    
+    #reset longueur header sinon trame non reconnue
+    arp[RadioTap].len = None 
+
+    #frame prend le numero du compteur
+    arp.SC = i 
 
     #MF si pas dernière trame
     if i < countFrag-1:
-        arp.FCfield = 0b100 #code pour MF
+        arp.FCfield |= 0b100 #code pour MF
 
-    print(arp.FCfield)
+    arp.icv = struct.unpack('!L', clearICV)[0]
 
     #insere les trames dans le fichier
     wrpcap("step3.pcap", arp, append = i > 0)
