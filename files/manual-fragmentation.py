@@ -74,7 +74,7 @@ for i in range(0, countFrag):
     #MF si pas dernière trame
     if i < countFrag-1:
         arp.FCfield |= 0b100 #code pour MF
-
+    
     #on indique l'icv de la trame
     arp.icv = struct.unpack('!L', clearICV)[0]
 

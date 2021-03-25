@@ -35,7 +35,7 @@ icv = binascii.crc32(text).to_bytes(4, byteorder='little')
 # chiffrement rc4
 cipher = RC4(seed, streaming=False)
 
-#text encrypté
+#encrypte le texte
 encryptedText = cipher.crypt(text + icv)
  
 #on complete la trame avec les wepdata
@@ -50,5 +50,5 @@ arp.iv = iv
 #on insere l'icv dans la trame
 arp.icv = struct.unpack('!L', clearICV)[0]
 
-#écris le fichier
+#écris la trame dans le fichier
 wrpcap("step2.pcap", arp)
